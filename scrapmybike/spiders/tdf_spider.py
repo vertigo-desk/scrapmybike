@@ -23,7 +23,7 @@ class BikeSpider(Spider):
 
     start_urls = []
     for i in range(1,10):
-        start_urls = start_urls+[("http://www.letour.fr/le-tour/2017/fr/%d00/classement/bloc-classement-page/ITE.html" % i)]
+        start_urls = start_urls+[("http://www.letour.fr/le-tour/2017/fr/%d00/classement/bloc-classement-page/ITG.html" % i)]
 
     def parse(self, response):
         def strip_accents(s):
