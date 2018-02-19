@@ -10,6 +10,7 @@ import re
 class BikeSpider(Spider):
     name = 'tdfspider'
     mydict = {}
+    ranking_type = "ITE" #ITE = etape, ITG = general
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
@@ -24,7 +25,7 @@ class BikeSpider(Spider):
 
     start_urls = []
     for i in range(1,22):
-        start_urls = start_urls+[("http://www.letour.fr/le-tour/2017/fr/%d00/classement/bloc-classement-page/ITG.html" % i)]
+        start_urls = start_urls+[("http://www.letour.fr/le-tour/2017/fr/{0}00/classement/bloc-classement-page/{1}.html".format(i,ranking_type))]
 
     def parse(self, response):
         def strip_accents(s):
@@ -33,7 +34,7 @@ class BikeSpider(Spider):
 
         # extract stage number from url
         etape = response.url
-        m = re.search('http://www.letour.fr/le-tour/2017/fr/(.+?)00/classement/bloc-classement-page/ITG.html', etape)
+        m = re.search('http://www.letour.fr/le-tour/2017/fr/(.+?)00/classement/bloc-classement-page/{0}.html'.format(self.ranking_type), etape)
         if m:
             no_etape = m.group(1)
 
@@ -51,17 +52,14 @@ class BikeSpider(Spider):
     def spider_closed(self, spider):
         with open('tdfres.csv', 'wb') as csv_file:
             writer = csv.writer(csv_file)
-            fortuneo = ["FEILLU Brice", "PICHON Laurent", "BOUET Maxime", "PERICHON Pierre-Luc", "MC LAY DANIEL", "VACHON Florian", "HARDY Romain","GESBERT Elie", "SEPULVEDA Eduardo", "BARDET Romain","BAKELANTS Jan","DOMONT Axel","FRANK Mathias","GASTAUER Ben","GAUTIER Cyril","LATOUR Pierre-Roger","NAESEN Oliver","VUILLERMOZ Alexis"]
-            writer.writerow(["epreuve", "nbcoureurs"]+(map(lambda s: s.replace(" ", "_"), fortuneo)))
 
-            
-            for i in range(1,22):
-                result_etape = []
-                for rider in fortuneo:
-                    result_etape.append(self.mydict[rider][i])
-
-                writer.writerow([i]+[198]+result_etape)
-
-            '''for key, value in self.mydict.items():
+            for key, value in self.mydict.items():
                 writer.writerow([key.encode('utf-8')]+value)
-            '''
+
+            '''fortuneo = ["FEILLU Brice", "PICHON Laurent", "BOUET Maxime", "PERICHON Pierre-Luc", "MC LAY DANIEL", "VACHON Florian", "HARDY Romain","GESBERT Elie", "SEPULVEDA Eduardo", "BARDET Romain","BAKELANTS Jan","DOMONT Axel","FRANK Mathias","GASTAUER Ben","GAUTIER Cyril","LATOUR Pierre-Roger","NAESEN Oliver","VUILLERMOZ Alexis"]
+            writer.writerow(["epreuve", "nbcoureurs"]+(map(lambda s: s.replace(" ", "_"), fortuneo)))
+            for i in range(1,22):
+            result_etape = []
+            for rider in fortuneo:
+                result_etape.append(self.mydict[rider][i])
+            writer.writerow([i]+[198]+result_etape)'''

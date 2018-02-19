@@ -5,7 +5,7 @@ import datetime
 class BikeSpider(scrapy.Spider):
     name = 'bikespider'
 
-    start_urls = ['http://www.procyclingstats.com/races.php?year=2017&circuit=13&ApplyFilter=Filter']
+    start_urls = ['http://www.procyclingstats.com/races.php?year=2018&circuit=13&ApplyFilter=Filter']
 
     #start_urls = ['http://www.procyclingstats.com/race/Trofeo_Porreres,_Felanitx,_Ses_Salines,_Campos_2017']
 
