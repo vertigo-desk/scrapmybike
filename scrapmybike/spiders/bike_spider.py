@@ -11,12 +11,12 @@ class BikeSpider(scrapy.Spider):
 
     def parse(self, response):
         # follow links to races pages
-        for href in response.css('a::attr(href)').re(r'race\.php.*=2'):
-            yield response.follow(href, self.parse)
+        #for href in response.css('a::attr(href)').re(r'race\.php.*=2'):
+         #   yield response.follow(href, self.parse)
 
 
         # follow pagination links
-        for href in response.selector.xpath("//a[contains(text(),'Result')]/@href").extract():
+        for href in response.selector.xpath("//table/tr/td/a[re:test(@href, '2018$')]/@href").extract():
             yield response.follow(href, self.parse_race)
 
  
