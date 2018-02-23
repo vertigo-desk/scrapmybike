@@ -1,5 +1,6 @@
 import scrapy
 import datetime
+import logging
 
 
 class BikeSpider(scrapy.Spider):
@@ -22,6 +23,20 @@ class BikeSpider(scrapy.Spider):
  
 
     def parse_race(self, response):
+        
+        # race title
+        race = response.xpath('//h1/text()').extract()[0]
+        race = race[13:]
+        #logging.warning(race)
+        
+        # result tab
+        for tr in response.xpath('//table[contains(@class, "basic")]/tbody/tr'):
+            
+            logging.warning(tr.xpath('td/text()').extract_first())
+            logging.warning(tr.xpath('td/a/@href').extract())
+
+'''
+
         ranks = response.xpath('//span[contains(@class, "show")]/span[not(contains(@class, "time")) and not(contains(@style,"tahoma"))]/text()').re(r'(\d+)')
         maxrank = max(map(int, ranks))
 
@@ -52,4 +67,4 @@ class BikeSpider(scrapy.Spider):
                     'team' : team,
                 }
             
-            
+         '''   
