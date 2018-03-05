@@ -1,14 +1,23 @@
 import scrapy
+from scrapy import signals
+from scrapy import Spider
 import datetime
 import logging
+import csv
 
 
-class BikeSpider(scrapy.Spider):
+class BikeSpider(Spider):
     name = 'bikespider'
-
+    riders = set()
     start_urls = ['http://www.procyclingstats.com/races.php?year=2018&circuit=13&ApplyFilter=Filter']
 
     #start_urls = ['http://www.procyclingstats.com/race/Trofeo_Porreres,_Felanitx,_Ses_Salines,_Campos_2017']
+
+    @classmethod
+    def from_crawler(cls, crawler, *args, **kwargs):
+        spider = super(BikeSpider, cls).from_crawler(crawler, *args, **kwargs)
+        crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)
+        return spider 
 
     def parse(self, response):
         # follow links to races pages
@@ -27,13 +36,19 @@ class BikeSpider(scrapy.Spider):
         # race title
         race = response.xpath('//h1/text()').extract()[0]
         race = race[13:]
-        #logging.warning(race)
         
         # result tab
-        for tr in response.xpath('//table[contains(@class, "basic")]/tbody/tr'):
-            
-            logging.warning(tr.xpath('td/text()').extract_first())
-            logging.warning(tr.xpath('td/a/@href').extract())
+        for tr in response.xpath('//div[re:test(@class, "show")]/table[contains(@class, "basic")]/tbody/tr'):
+            resultat = tr.xpath('td/text()').extract_first()
+            rider = tr.xpath('td/a/@href')[0].re_first(r'rider\/(.*)')
+            self.riders.add(str(rider))
+            team = tr.xpath('td/a/@href')[1].re_first(r'team\/(.*)')
+
+    def spider_closed(self, spider):
+        with open('list_riders.csv', 'wb') as csv_file:
+            writer = csv.writer(csv_file)
+            for rider in self.riders:
+                writer.writerow(rider)
 
 '''
 
