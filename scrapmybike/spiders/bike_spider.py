@@ -4,15 +4,13 @@ from scrapy import Spider
 import datetime
 import logging
 import csv
-from rez import Rez
 from race import Race
 
 class BikeSpider(Spider):
     name = 'bikespider'
     riders = set()
+    racetable = []
     start_urls = ['http://www.procyclingstats.com/races.php?year=2018&circuit=13&ApplyFilter=Filter']
-
-    #start_urls = ['http://www.procyclingstats.com/race/Trofeo_Porreres,_Felanitx,_Ses_Salines,_Campos_2017']
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
@@ -39,22 +37,32 @@ class BikeSpider(Spider):
         race_name = race_name[13:]
         race = Race(race_name)
         
+        
+
         # result tab
         for tr in response.xpath('//div[re:test(@class, "show")]/table[contains(@class, "basic")]/tbody/tr'):
             rank = tr.xpath('td/text()').extract_first()
-            rider = tr.xpath('td/a/@href')[0].re_first(r'rider\/(.*)')
+            rider = str(tr.xpath('td/a/@href')[0].re_first(r'rider\/(.*)'))
             team = tr.xpath('td/a/@href')[1].re_first(r'team\/(.*)')
-            self.riders.add((str(rider),str(team)))
-            rez = Rez(rank,rider)
-            race.listResults.append(rez)
+            self.riders.add((rider,str(team)))
+            race.listResults.append((rank,rider))
+
+        self.racetable.append(race)
 
     def spider_closed(self, spider):
-        # logging.warning(self.riders)
+        # extrait les coureur d'une team
         logging.warning(filter(lambda x: x[1].startswith('fortuneo-samsic-2018'), self.riders))
 
-        
-        with open('list_riders.csv', 'w') as csv_file:
-            writer = csv.writer(csv_file)
+        file = open('tab','w')
+        #first line
+        file.write('epreuve,nbcoureurs')
+        for r in self.riders:
+            file.write(','+r[0])
+        file.write('\n')
+
+        file.close()
+        #with open('list_riders.csv', 'w') as csv_file:
+        #    writer = csv.writer(csv_file)
             #writer.writerow(self.riders)
 
 '''
