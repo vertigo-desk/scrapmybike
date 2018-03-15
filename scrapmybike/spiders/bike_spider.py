@@ -4,6 +4,7 @@ from scrapy import Spider
 import datetime
 import logging
 import csv
+import re
 from race import Race
 
 class BikeSpider(Spider):
@@ -35,6 +36,7 @@ class BikeSpider(Spider):
         # race title
         race_name = response.xpath('//h1/text()').extract()[0]
         race_name = race_name[13:]
+        race_name = re.sub('[,]', ' ', race_name)
         race = Race(race_name)
         
         
@@ -51,14 +53,26 @@ class BikeSpider(Spider):
 
     def spider_closed(self, spider):
         # extrait les coureur d'une team
-        logging.warning(filter(lambda x: x[1].startswith('fortuneo-samsic-2018'), self.riders))
-
+        # logging.warning(filter(lambda x: x[1].startswith('fortuneo-samsic-2018'), self.riders))
+        # logging.warning("nb riders >>>>> "+str(len(self.riders)))
+        
         file = open('tab','w')
         #first line
         file.write('epreuve,nbcoureurs')
         for r in self.riders:
             file.write(','+r[0])
         file.write('\n')
+
+        # each race
+        for ra in self.racetable:
+            file.write(ra.name.encode('utf-8')+','+str(len(ra.listResults))+',')
+            # each rider
+            for r in self.riders:
+                # if rider in the race
+                file.write(ra.getResult(r[0]))
+                file.write(',')
+                
+            file.write('\n')
 
         file.close()
         #with open('list_riders.csv', 'w') as csv_file:
